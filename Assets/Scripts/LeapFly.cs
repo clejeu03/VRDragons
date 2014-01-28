@@ -59,7 +59,7 @@ public class LeapFly : MonoBehaviour {
       newRot.y += handDiff.z * 3.0f - newRot.z * 0.03f * transform.parent.rigidbody.velocity.magnitude;
       newRot.x = -(avgPalmForward.y - 0.1f) * 100.0f;
 
-      float forceMult = 10.0f;
+		float forceMult = 10.0f;
       
       // if closed fist, then stop the plane and slowly go backwards.
       if (frame.Fingers.Count < 3) {
@@ -69,6 +69,28 @@ public class LeapFly : MonoBehaviour {
       transform.parent.localRotation = Quaternion.Slerp(transform.parent.localRotation, Quaternion.Euler(newRot), 0.1f);
       transform.parent.rigidbody.velocity = transform.parent.forward * forceMult;
     }
+		else {
+			Vector3 newRot = transform.parent.localRotation.eulerAngles;
+			float forceMult = 10.0f;
+			// Keyboard motion of the toy
+			if (Input.GetKey(KeyCode.UpArrow)) {
+				transform.parent.localRotation = Quaternion.Slerp(transform.parent.localRotation, Quaternion.Euler(newRot), 0.1f);
+				transform.parent.rigidbody.velocity = transform.parent.forward * forceMult;
+				//transform.Translate(transform.forward * Time.deltaTime * 3.5f);
+			} else if(Input.GetKey(KeyCode.DownArrow)) {
+				transform.parent.localRotation = Quaternion.Slerp(transform.parent.localRotation, Quaternion.Euler(newRot), 0.1f);
+				transform.parent.rigidbody.velocity = -transform.parent.forward * forceMult;
+				//transform.Translate(-transform.forward * Time.deltaTime * 3.5f);
+			} else if(Input.GetKey(KeyCode.RightArrow)) {
+				transform.parent.localRotation = Quaternion.Slerp(transform.parent.localRotation, Quaternion.Euler(Vector3.right), 0.1f);
+				//transform.parent.rigidbody.velocity = transform.parent.right * forceMult;
+				//transform.Translate(transform.right * Time.deltaTime * 3.5f);
+			} else if(Input.GetKey(KeyCode.LeftArrow)) {
+				transform.parent.localRotation = Quaternion.Slerp(transform.parent.localRotation, Quaternion.Euler(Vector3.left), 0.1f);
+				//transform.parent.rigidbody.velocity = -transform.parent.right * forceMult;
+				//transform.Translate(-transform.right * Time.deltaTime * 3.5f);
+			}
+		}
 
   }
   
