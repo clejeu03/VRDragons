@@ -25,6 +25,7 @@ using Leap;
 public class NetworkControl : MonoBehaviour {
 
 	Controller m_leapController;
+
 	public float speed = 3.5f;
 
 	public GameObject myCamera;
@@ -33,8 +34,15 @@ public class NetworkControl : MonoBehaviour {
 	private float lastSynchronizationTime = 0f;
 	private float syncDelay = 0f;
 	private float syncTime = 0f;
-	private Vector3 syncStartPosition = Vector3.zero;
-	private Vector3 syncEndPosition = Vector3.zero;
+
+	private float forceMult = 0f;
+	private float syncForceMult = 0f;
+
+	private Vector3 newRot = Vector3.zero;
+	private Vector3 syncNewRot = Vector3.zero;
+
+	private Quaternion syncStartRotation = Quaternion.identity;
+	private Quaternion syncEndRotation = Quaternion.identity;
 
 	private bool isHost = false;
 
@@ -51,6 +59,10 @@ public class NetworkControl : MonoBehaviour {
 		// If the Dragon isn't the player's one, disable its camera 
 		if (!networkView.isMine) {
 			myCamera.camera.enabled = false;
+		}
+		// If the Dragon is the player's one, get the leapController
+		if(networkView.isMine){
+			m_leapController = new Controller();
 		}
 	}
 
@@ -79,60 +91,142 @@ public class NetworkControl : MonoBehaviour {
 		}
 	}
 
-	/* Update the position of the Dragon according to the movements of the Dragon of the player's opponent*/
+	/* Update the rotation and velocity of the Dragon according to the movements of the Dragon of the player's opponent*/
 	private void SyncedMovement()
 	{
 		syncTime += Time.deltaTime;
-		
-		rigidbody.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
+
+		transform.localRotation = Quaternion.Slerp(syncStartRotation, syncEndRotation, syncTime /syncDelay);
+		transform.rigidbody.velocity = transform.forward * syncForceMult;
+
+	}
+
+	/* Get the left Hand*/
+	Hand GetLeftMostHand(Frame f) {
+		float smallestVal = float.MaxValue;
+		Hand h = null;
+		for(int i = 0; i < f.Hands.Count; ++i) {
+			if (f.Hands[i].PalmPosition.ToUnity().x < smallestVal) {
+				smallestVal = f.Hands[i].PalmPosition.ToUnity().x;
+				h = f.Hands[i];
+			}
+		}
+		return h;
+	}
+
+	/* Get the right Hand*/
+	Hand GetRightMostHand(Frame f) {
+		float largestVal = -float.MaxValue;
+		Hand h = null;
+		for(int i = 0; i < f.Hands.Count; ++i) {
+			if (f.Hands[i].PalmPosition.ToUnity().x > largestVal) {
+				largestVal = f.Hands[i].PalmPosition.ToUnity().x;
+				h = f.Hands[i];
+			}
+		}
+		return h;
 	}
 
 	/*Handle player's input*/
 	void InputMovement() {
-		if (Input.GetKey(KeyCode.Z))
-			rigidbody.MovePosition(rigidbody.position + Vector3.forward * speed * Time.deltaTime);
-		
-		if (Input.GetKey(KeyCode.S))
-			rigidbody.MovePosition(rigidbody.position - Vector3.forward * speed * Time.deltaTime);
-		
-		if (Input.GetKey(KeyCode.D))
-			rigidbody.MovePosition(rigidbody.position + Vector3.right * speed * Time.deltaTime);
-		
-		if (Input.GetKey(KeyCode.Q))
-			rigidbody.MovePosition(rigidbody.position - Vector3.right * speed * Time.deltaTime);
+
+		Frame frame = m_leapController.Frame();
+
+		// Leap controls
+		if (frame.Hands.Count >= 2) {
+			// Get the hands
+			Hand leftHand = GetLeftMostHand(frame);
+			Hand rightHand = GetRightMostHand(frame);
+			
+			// Takes the average direction (vector from the palm position toward the fingers) between the two hands 
+			// TODO It will be used for the pitch of the Dragon ???
+			Vector3 avgPalmForward = (frame.Hands[0].Direction.ToUnity() + frame.Hands[1].Direction.ToUnity()) * 0.5f;
+
+			// Get the difference between the hands position
+			// PalmPosition : center position of the palm from the leap motion controller origin in millimeter
+			Vector3 handDiff = leftHand.PalmPosition.ToUnityScaled() - rightHand.PalmPosition.ToUnityScaled();
+
+			// Gets the rotation of the transform relative to the parent transform's rotation (should be 
+			//null in our case at the beginning, as the Dragon hasn't any parent)
+			newRot = transform.localRotation.eulerAngles;
+
+			newRot.z = -handDiff.y * 20.0f;
+			
+			// Adding the rot.z as a way to use banking (rolling) to turn.
+			newRot.y += handDiff.z * 3.0f - newRot.z * 0.03f * transform.rigidbody.velocity.magnitude;
+			newRot.x = -(avgPalmForward.y - 0.1f) * 100.0f;
+			
+			forceMult = 10.0f;
+			
+			// if closed fist, then stop the plane (and slowly go backwards)
+			if (frame.Fingers.Count < 3) {
+				forceMult = -3.0f;
+				//forceMult = 0f;
+			}
+			
+			transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(newRot), 0.1f);
+			transform.rigidbody.velocity = transform.forward * forceMult;
+		}
+
+		// Keyboard controls
+		else{
+			if (Input.GetKey(KeyCode.Z))
+				rigidbody.MovePosition(rigidbody.position + Vector3.forward * speed * Time.deltaTime);
+			
+			if (Input.GetKey(KeyCode.S))
+				rigidbody.MovePosition(rigidbody.position - Vector3.forward * speed * Time.deltaTime);
+			
+			if (Input.GetKey(KeyCode.D))
+				rigidbody.MovePosition(rigidbody.position + Vector3.right * speed * Time.deltaTime);
+			
+			if (Input.GetKey(KeyCode.Q))
+				rigidbody.MovePosition(rigidbody.position - Vector3.right * speed * Time.deltaTime);
+		}
 
 	}
+
+	//transform.localRotation = Quaternion.Slerp(syncStartRotation, Quaternion.Euler(syncEndRotation), syncTime);
+	//transform.rigidbody.velocity = transform.forward * forceMult;
 
 	/* This function is automatically called every time it sends or receives datas.
 	(To use for data that constantly changed) */
 	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
 	{
-		Vector3 syncPosition = Vector3.zero;
+		Quaternion syncRotation = Quaternion.identity;
 		Vector3 syncVelocity = Vector3.zero;
 		
 		// The player is writing to the stream (= he moves its own Dragon...)
 		if (stream.isWriting)
 		{
-			syncPosition = rigidbody.position;
-			stream.Serialize(ref syncPosition);
+			syncRotation = transform.localRotation;
+			stream.Serialize(ref syncRotation);
 			
-			syncPosition = rigidbody.velocity;
+			syncVelocity = transform.rigidbody.velocity;
 			stream.Serialize(ref syncVelocity);
+
+			syncForceMult = forceMult;
+			stream.Serialize(ref syncForceMult);
+
+			syncNewRot = newRot;
+			stream.Serialize(ref syncNewRot);
+
 		}
 		// The dragon of the player's opponent need to be moved
 		else
 		{
-			stream.Serialize(ref syncPosition);
+			stream.Serialize(ref syncRotation);
 			stream.Serialize(ref syncVelocity);
+			stream.Serialize(ref syncForceMult);
+			stream.Serialize(ref syncNewRot);
 			
 			// Interpolation : smoothing the transition from the old to the new data values
 			syncTime = 0f;
 			syncDelay = Time.time - lastSynchronizationTime;
 			lastSynchronizationTime = Time.time;
 			
-			// Prediction : the position is "updated" before the new data is received
-			syncEndPosition = syncPosition + syncVelocity * syncDelay;
-			syncStartPosition = rigidbody.position;
+			// Prediction : the rotation is "updated" before the new data is received
+			syncEndRotation = Quaternion.Slerp(syncRotation, Quaternion.Euler(syncNewRot), syncDelay);
+			syncStartRotation = transform.localRotation;
 		}
 	}
 }
