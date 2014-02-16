@@ -170,19 +170,47 @@ public class NetworkControl : MonoBehaviour {
 
 		// Keyboard controls
 		else{
-			if (Input.GetKey(KeyCode.Z))
-				rigidbody.MovePosition(rigidbody.position + Vector3.forward * speed * Time.deltaTime);
-			
-			if (Input.GetKey(KeyCode.S))
-				rigidbody.MovePosition(rigidbody.position - Vector3.forward * speed * Time.deltaTime);
-			
-			if (Input.GetKey(KeyCode.D))
-				rigidbody.MovePosition(rigidbody.position + Vector3.right * speed * Time.deltaTime);
-			
-			if (Input.GetKey(KeyCode.Q))
-				rigidbody.MovePosition(rigidbody.position - Vector3.right * speed * Time.deltaTime);
-		}
+			// Gets the rotation of the transform relative to the parent transform's rotation (should be 
+			//null in our case at the beginning, as the Dragon hasn't any parent)
+			newRot = transform.localRotation.eulerAngles;
 
+			// We need to press the UpArrow or DownArrow(= we have the hands over the LeapMotion controller) to make the plane move
+			if((Input.GetKey(KeyCode.UpArrow)) || (Input.GetKey(KeyCode.DownArrow))){
+
+				// If the UpArrow is pressed, then go forward ("positive" speed)
+				if(Input.GetKey(KeyCode.UpArrow))
+					forceMult = 10.0f;
+				// If the DownArrow is pressed (= if closed fist) then stop the plane and slowly go back ("negative" speed)
+				else if(Input.GetKey(KeyCode.DownArrow))
+					forceMult = -3.0f;
+
+				// Rotation around the x axis
+				if (Input.GetKey(KeyCode.Z))
+					newRot.x -= 10f;
+				if (Input.GetKey(KeyCode.S))
+					newRot.x += 10f;
+
+				// Rotation around the y axis
+				if (Input.GetKey(KeyCode.Q))
+					newRot.y -= 10f;
+				if (Input.GetKey(KeyCode.D))
+					newRot.y += 10f;
+
+				// Rotation around the z axis
+				if (Input.GetKey(KeyCode.A))
+					newRot.z += 10f;			
+				if (Input.GetKey(KeyCode.E))
+					newRot.z -= 10f;
+			}
+
+			// If the upArrow or DownArrow aren't pressed (= we haven't the hands over the LeapMotion controller) then stop the plane
+			else {
+				forceMult = 0f;
+			}
+
+			transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(newRot), 0.1f);
+			transform.rigidbody.velocity = transform.forward * forceMult;
+		}
 	}
 
 	//transform.localRotation = Quaternion.Slerp(syncStartRotation, Quaternion.Euler(syncEndRotation), syncTime);
