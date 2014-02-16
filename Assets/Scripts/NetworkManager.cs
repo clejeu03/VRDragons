@@ -9,8 +9,8 @@ public class NetworkManager : MonoBehaviour
 	public GameObject player1Prefab;
 	public GameObject player2Prefab;
 
-    private const string typeName = "UniqueGameName";
-    private const string gameName = "RoomName";
+	private const string typeName = "UniqueGameName";
+	private const string gameName = "RoomName";
 
     private bool isRefreshingHostList = false;
     private HostData[] hostList;
@@ -130,10 +130,10 @@ public class NetworkManager : MonoBehaviour
 	private void SpawnPlayer()
 	{
 		if (isHost == true) {
-			Network.Instantiate (player1Prefab, player1Prefab.transform.position + Vector3.left, player1Prefab.transform.rotation, 0);
+			Network.Instantiate (player1Prefab, player1Prefab.transform.position, player1Prefab.transform.rotation, 0);
 		}
 		else{
-			Network.Instantiate (player2Prefab, player2Prefab.transform.position + Vector3.left, player2Prefab.transform.rotation, 0);
+			Network.Instantiate (player2Prefab, player2Prefab.transform.position, player2Prefab.transform.rotation, 0);
 		}
 	}
 
