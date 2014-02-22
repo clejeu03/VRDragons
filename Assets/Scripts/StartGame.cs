@@ -16,6 +16,11 @@ public class StartGame : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		if (PlayerPrefs.GetString ("mode") == "solo") {
+			// Back to the Main Menu scene
+			if (Input.GetKey(KeyCode.Escape))
+				Application.LoadLevel ("TestMenu");
+		}
 	
 	}
 }

@@ -25,9 +25,7 @@ using Leap;
 public class NetworkControl : MonoBehaviour {
 
 	Controller m_leapController;
-
-	public float speed = 3.5f;
-
+	
 	public GameObject myCamera;
 
 	// Interpolation values
@@ -139,7 +137,6 @@ public class NetworkControl : MonoBehaviour {
 			Hand rightHand = GetRightMostHand(frame);
 			
 			// Takes the average direction (vector from the palm position toward the fingers) between the two hands 
-			// TODO It will be used for the pitch of the Dragon ???
 			Vector3 avgPalmForward = (frame.Hands[0].Direction.ToUnity() + frame.Hands[1].Direction.ToUnity()) * 0.5f;
 
 			// Get the difference between the hands position
@@ -158,7 +155,7 @@ public class NetworkControl : MonoBehaviour {
 			
 			forceMult = 10.0f;
 			
-			// if closed fist, then stop the plane (and slowly go backwards)
+			// If closed fist, then stop the plane (and slowly go backwards)
 			if (frame.Fingers.Count < 3) {
 				forceMult = -3.0f;
 				//forceMult = 0f;

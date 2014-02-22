@@ -4,94 +4,124 @@ using Leap;
 
 public class LeapFly : MonoBehaviour {
   
-  Controller m_leapController;
-  
-  // Use this for initialization
-  void Start () {
-    m_leapController = new Controller();
-    if (transform.parent == null) {
-      Debug.LogError("LeapFly must have a parent object to control"); 
-    }
-  }
-  
-  Hand GetLeftMostHand(Frame f) {
-    float smallestVal = float.MaxValue;
-    Hand h = null;
-    for(int i = 0; i < f.Hands.Count; ++i) {
-      if (f.Hands[i].PalmPosition.ToUnity().x < smallestVal) {
-        smallestVal = f.Hands[i].PalmPosition.ToUnity().x;
-        h = f.Hands[i];
-      }
-    }
-    return h;
-  }
-  
-  Hand GetRightMostHand(Frame f) {
-    float largestVal = -float.MaxValue;
-    Hand h = null;
-    for(int i = 0; i < f.Hands.Count; ++i) {
-      if (f.Hands[i].PalmPosition.ToUnity().x > largestVal) {
-        largestVal = f.Hands[i].PalmPosition.ToUnity().x;
-        h = f.Hands[i];
-      }
-    }
-    return h;
-  }
-  
-  void FixedUpdate () {
-    
-    Frame frame = m_leapController.Frame();
-  
-    if (frame.Hands.Count >= 2) {
-      Hand leftHand = GetLeftMostHand(frame);
-      Hand rightHand = GetRightMostHand(frame);
-      
-      // takes the average vector of the forward vector of the hands, used for the
-      // pitch of the plane.
-      Vector3 avgPalmForward = (frame.Hands[0].Direction.ToUnity() + frame.Hands[1].Direction.ToUnity()) * 0.5f;
-      
-      Vector3 handDiff = leftHand.PalmPosition.ToUnityScaled() - rightHand.PalmPosition.ToUnityScaled();
-      
-      Vector3 newRot = transform.parent.localRotation.eulerAngles;
-      newRot.z = -handDiff.y * 20.0f;
-      
-      // adding the rot.z as a way to use banking (rolling) to turn.
-      newRot.y += handDiff.z * 3.0f - newRot.z * 0.03f * transform.parent.rigidbody.velocity.magnitude;
-      newRot.x = -(avgPalmForward.y - 0.1f) * 100.0f;
+	Controller m_leapController;
 
-		float forceMult = 10.0f;
+	private float forceMult = 0.0f;
+	private Vector3 newRot = Vector3.zero;
+  
+	void Start () {
+		// Get the leapController
+		m_leapController = new Controller();
+	}
+  
+	/* Get the left Hand*/
+	Hand GetLeftMostHand(Frame f) {
+	    float smallestVal = float.MaxValue;
+	    Hand h = null;
+	    for(int i = 0; i < f.Hands.Count; ++i) {
+	      	if (f.Hands[i].PalmPosition.ToUnity().x < smallestVal) {
+	        	smallestVal = f.Hands[i].PalmPosition.ToUnity().x;
+	        	h = f.Hands[i];
+	      	}
+	    }
+    	return h;
+  	}
+  
+	/* Get the right Hand*/
+	Hand GetRightMostHand(Frame f) {
+    	float largestVal = -float.MaxValue;
+    	Hand h = null;
+    	for(int i = 0; i < f.Hands.Count; ++i) {
+      		if (f.Hands[i].PalmPosition.ToUnity().x > largestVal) {
+        		largestVal = f.Hands[i].PalmPosition.ToUnity().x;
+        		h = f.Hands[i];
+      		}
+    	}
+    	return h;
+  	}
+  
+	/*Handle player's input*/
+	void FixedUpdate () {
+    
+		Frame frame = m_leapController.Frame();
+  
+		// Leap controls
+    	if (frame.Hands.Count >= 2) {
+			// Get the hands
+			Hand leftHand = GetLeftMostHand(frame);
+			Hand rightHand = GetRightMostHand(frame);
       
-      // if closed fist, then stop the plane and slowly go backwards.
-      if (frame.Fingers.Count < 3) {
-        forceMult = -3.0f;
-      }
-      
-      transform.parent.localRotation = Quaternion.Slerp(transform.parent.localRotation, Quaternion.Euler(newRot), 0.1f);
-      transform.parent.rigidbody.velocity = transform.parent.forward * forceMult;
-    }
-		else {
-			Vector3 newRot = transform.parent.localRotation.eulerAngles;
+			// Takes the average direction (vector from the palm position toward the fingers) between the two hands 
+			Vector3 avgPalmForward = (frame.Hands[0].Direction.ToUnity() + frame.Hands[1].Direction.ToUnity()) * 0.5f;
+
+			// Get the difference between the hands position
+			// PalmPosition : center position of the palm from the leap motion controller origin in millimeter
+			Vector3 handDiff = leftHand.PalmPosition.ToUnityScaled() - rightHand.PalmPosition.ToUnityScaled();
+
+			// Gets the rotation of the transform relative to the parent transform's rotation (should be 
+			//null in our case at the beginning, as the Dragon hasn't any parent)
+			newRot = transform.localRotation.eulerAngles;
+
+			newRot.z = -handDiff.y * 20.0f;
+
+			// Adding the rot.z as a way to use banking (rolling) to turn.
+			newRot.y += handDiff.z * 3.0f - newRot.z * 0.03f * transform.rigidbody.velocity.magnitude;
+			newRot.x = -(avgPalmForward.y - 0.1f) * 100.0f;
+
 			float forceMult = 10.0f;
-			// Keyboard motion of the toy
-			if (Input.GetKey(KeyCode.UpArrow)) {
-				transform.parent.localRotation = Quaternion.Slerp(transform.parent.localRotation, Quaternion.Euler(newRot), 0.1f);
-				transform.parent.rigidbody.velocity = transform.parent.forward * forceMult;
-				//transform.Translate(transform.forward * Time.deltaTime * 3.5f);
-			} else if(Input.GetKey(KeyCode.DownArrow)) {
-				transform.parent.localRotation = Quaternion.Slerp(transform.parent.localRotation, Quaternion.Euler(newRot), 0.1f);
-				transform.parent.rigidbody.velocity = -transform.parent.forward * forceMult;
-				//transform.Translate(-transform.forward * Time.deltaTime * 3.5f);
-			} else if(Input.GetKey(KeyCode.RightArrow)) {
-				transform.parent.localRotation = Quaternion.Slerp(transform.parent.localRotation, Quaternion.Euler(Vector3.right), 0.1f);
-				//transform.parent.rigidbody.velocity = transform.parent.right * forceMult;
-				//transform.Translate(transform.right * Time.deltaTime * 3.5f);
-			} else if(Input.GetKey(KeyCode.LeftArrow)) {
-				transform.parent.localRotation = Quaternion.Slerp(transform.parent.localRotation, Quaternion.Euler(Vector3.left), 0.1f);
-				//transform.parent.rigidbody.velocity = -transform.parent.right * forceMult;
-				//transform.Translate(-transform.right * Time.deltaTime * 3.5f);
-			}
+      
+			// If closed fist, then stop the plane (and slowly go backwards)
+		    if (frame.Fingers.Count < 3) {
+		    	forceMult = -3.0f;
+		    }
+      
+			transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(newRot), 0.1f);
+			transform.rigidbody.velocity = transform.forward * forceMult;
 		}
 
-  }
+		// Keyboard controls
+		else{
+			// Gets the rotation of the transform relative to the parent transform's rotation (should be 
+			//null in our case at the beginning, as the Dragon hasn't any parent)
+			newRot = transform.localRotation.eulerAngles;
+
+			// We need to press the UpArrow or DownArrow(= we have the hands over the LeapMotion controller) to make the plane move
+			if((Input.GetKey(KeyCode.UpArrow)) || (Input.GetKey(KeyCode.DownArrow))){
+			
+				// If the UpArrow is pressed, then go forward ("positive" speed)
+				if(Input.GetKey(KeyCode.UpArrow))
+					forceMult = 10.0f;
+				// If the DownArrow is pressed (= if closed fist) then stop the plane and slowly go back ("negative" speed)
+				else if(Input.GetKey(KeyCode.DownArrow))
+					forceMult = -3.0f;
+
+				// Rotation around the x axis
+				if (Input.GetKey(KeyCode.Z))
+					newRot.x -= 10f;
+				if (Input.GetKey(KeyCode.S))
+					newRot.x += 10f;
+
+				// Rotation around the y axis
+				if (Input.GetKey(KeyCode.Q))
+					newRot.y -= 10f;
+				if (Input.GetKey(KeyCode.D))
+					newRot.y += 10f;
+
+				// Rotation around the z axis
+				if (Input.GetKey(KeyCode.A))
+					newRot.z += 10f;			
+				if (Input.GetKey(KeyCode.E))
+					newRot.z -= 10f;
+			}
+		
+			// If the upArrow or DownArrow aren't pressed (= we haven't the hands over the LeapMotion controller) then stop the plane
+			else {
+				forceMult = 0f;
+			}
+		
+			transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(newRot), 0.1f);
+			transform.rigidbody.velocity = transform.forward * forceMult;
+		}
+	}
   
 }
