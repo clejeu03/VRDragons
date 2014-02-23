@@ -41,18 +41,13 @@ public class NetworkControl : MonoBehaviour {
 
 	private Quaternion syncStartRotation = Quaternion.identity;
 	private Quaternion syncEndRotation = Quaternion.identity;
-
-	private bool isHost = false;
-
-
+	
 	void Awake()
 	{
 		lastSynchronizationTime = Time.time;
 	}
 
 	void Start(){
-		// Is the game instance the host or the client ?
-		isHost = GameObject.Find("NetworkManager").GetComponent<NetworkManager>().isHost;
 		
 		// If the Dragon isn't the player's one, disable its camera 
 		if (!networkView.isMine) {
@@ -67,7 +62,7 @@ public class NetworkControl : MonoBehaviour {
 	void OnGUI()
 	{
 		// If the game is the host
-		if(isHost){
+		if(Network.isServer){
 			GUI.Box(new Rect(10,10,50,20), "Host");
 		}
 		else

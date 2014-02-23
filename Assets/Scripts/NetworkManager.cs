@@ -6,77 +6,34 @@ using System.Collections;
  */
 public class NetworkManager : MonoBehaviour
 {
-	public GameObject player1Prefab;
-	public GameObject player2Prefab;
+	// Main menu variables
+	private GameObject mainMenu;
+	private Menu mainMenuScript;
 
+	// Network variables
 	private const string typeName = "UniqueGameName";
 	private const string gameName = "RoomName";
 
     private bool isRefreshingHostList = false;
-    private HostData[] hostList;
-
-	private bool displayNetworkManager = false;
-
-	private int width = Screen.width;
-	private int height = Screen.height;
+    private HostData[] hostList = null;
 	
-	private Texture2D blackTexture;
-	private GUIStyle styleMenu = new GUIStyle();
 
-	public bool isHost = false;
-	
-	void Start () {
-		// Create a "black screen" texture
-		blackTexture = new Texture2D(width,height);
-		Color blackColor = new Color(0, 0, 0);
-		
-		for(int i = 0; i<width; i++)
-		{
-			for(int j = 0; j<height; j++)
-			{
-				blackTexture.SetPixel(i, j, blackColor);
-			}
-		}
-		blackTexture.Apply();		
-		
-		// Reset the background padding
-		styleMenu.padding = new RectOffset(0,0,0,0);
+	/*******************************************************
+	 * Initialisation functions
+	 ******************************************************/
+
+	void Awake(){
+		// Retrieve the MainMenu gameObject
+		mainMenu = GameObject.Find ("MainMenu");
+		mainMenuScript = mainMenu.GetComponent<Menu>();
 	}
 
-    void OnGUI()
-    {
-		// If the player hasn't started or joined a server yet
-		if (!Network.isClient && !Network.isServer && displayNetworkManager)
-        {
-			// Background
-			GUI.Box(new Rect (0 , 0, width, height),blackTexture,styleMenu);
 
-			// Button to start a server
-            if (GUI.Button(new Rect(100, 100, 250, 100), "Start Server"))
-                StartServer();
+	/*******************************************************
+	 * Server actions : Start or Close a server
+	 ******************************************************/
 
-			// Button to refresh the host list
-            if (GUI.Button(new Rect(100, 250, 250, 100), "Refresh Hosts"))
-                RefreshHostList();
-
-			// Display the list of available hosts if it isn't empty
-            if (hostList != null)
-            {
-                for (int i = 0; i < hostList.Length; i++)
-                {
-					// Button to join a server
-                    if (GUI.Button(new Rect(400, 100 + (110 * i), 300, 100), hostList[i].gameName))
-                        JoinServer(hostList[i]);
-                }
-            }
-        }
-    }
-
-	public void setDisplayNetworkManager(){
-		displayNetworkManager = true;
-	}
-	/*Server creation*/
-    private void StartServer()
+    public void StartServer()
     {
 		// Initialize the server on the network : 
 		// InitializeServer(MaxPlayerAmount, PortNumber, Use NAT punchthrough if no public IP present)
@@ -84,28 +41,44 @@ public class NetworkManager : MonoBehaviour
 		// Register the host to the Master : ServerRegisterHost(UniqueGameName, RoomName)
         MasterServer.RegisterHost(typeName, gameName);
     }
-
-	/*Actions when the server is succesfully initialized*/
-    void OnServerInitialized()
-    {
-		//PlayerPrefs.SetString("type","host");
-		isHost = true;
-		SpawnPlayer();
-    }
+	
+	public void CloseServer(){
+		Network.Disconnect();
+		MasterServer.UnregisterHost();
+	}
 
 
+	/*******************************************************
+	 * Client actions : Join a server
+	 ******************************************************/
+
+	public void JoinServer(HostData hostData)
+	{
+		Network.Connect(hostData);
+	}
+
+
+	/*******************************************************
+	 * Update the host list
+	 ******************************************************/
     void Update()
     {
-		// If the list of host has been refreshed and isn't empty, the host list is stored
-        if (isRefreshingHostList && MasterServer.PollHostList().Length > 0)
+		// If the list of host has been refreshed 
+        if (isRefreshingHostList)
         {
             isRefreshingHostList = false;
-            hostList = MasterServer.PollHostList();
+			// If the list of host isn't empty, the host list is refresh
+			if(MasterServer.PollHostList().Length > 0)
+            	hostList = MasterServer.PollHostList();
+			else hostList = null;
+
+			// The MainMenu list of hosts need to be refreshed as well
+			mainMenuScript.setHostList(hostList);
         }
     }
 
-	/*Send a request to the master server to get the list of host, contening all the data to join a server*/
-    private void RefreshHostList()
+	// Send a request to the master server to get the list of host contening all the data to join a server
+    public void RefreshHostList()
     {
         if (!isRefreshingHostList)
         {
@@ -114,27 +87,33 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-	/*Join a server*/
-    private void JoinServer(HostData hostData)
-    {
-        Network.Connect(hostData);
-    }
 
-	/*Function called after the player has actually joined the server*/
+	/***************************************************************************
+	 * Messages sent on the server or the client when a specific event occures
+	 **************************************************************************/
+	
+	// Actions called on the server whenever it has been succesfully initialized
+	void OnServerInitialized()
+	{
+		// Display the waiting room for the server-player
+		mainMenuScript.setCurrentStateWait();
+	}
+
+	// Actions called on the client when a connection attempt fails for some reason
+	void OnFailedToConnect(){
+	}
+
+	// Actions called on the client when it has successfully joined a server
     void OnConnectedToServer()
     {
-		//PlayerPrefs.SetString("type","client");
-		isHost = false;
-		SpawnPlayer();
+		// Launch the game
+		mainMenuScript.Play ();
     }
-	private void SpawnPlayer()
+	// Actions called on the server whenever a new player has successfully connected
+	void OnPlayerConnected()
 	{
-		if (isHost == true) {
-			Network.Instantiate (player1Prefab, player1Prefab.transform.position, player1Prefab.transform.rotation, 0);
-		}
-		else{
-			Network.Instantiate (player2Prefab, player2Prefab.transform.position, player2Prefab.transform.rotation, 0);
-		}
+		// Launch the game
+		mainMenuScript.Play ();
 	}
 
 }

@@ -576,6 +576,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerSoloPrefab: {fileID: 100006, guid: 04a8bfc48d4ff434a88e2c436ab9ee5a, type: 2}
+  player1Prefab: {fileID: 100006, guid: 78ea856b3ffdd3e4d8ce965b5325ed70, type: 2}
+  player2Prefab: {fileID: 100006, guid: 7b49b9c2784b3934f92810ae48b9b70e, type: 2}
 --- !u!4 &1735168286
 Transform:
   m_ObjectHideFlags: 0

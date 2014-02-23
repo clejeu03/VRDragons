@@ -112,45 +112,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5435b446a6167e648928b11e8a1208e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  networkManager: {fileID: 2031093767}
---- !u!1 &2031093767
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 4
-  m_Component:
-  - 4: {fileID: 2031093768}
-  - 114: {fileID: 2031093769}
-  m_Layer: 0
-  m_Name: NetworkManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2031093768
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2031093767}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
---- !u!114 &2031093769
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2031093767}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31d54727007527d4bab855fd3fd9b76a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  player1Prefab: {fileID: 100006, guid: 78ea856b3ffdd3e4d8ce965b5325ed70, type: 2}
-  player2Prefab: {fileID: 100006, guid: 7b49b9c2784b3934f92810ae48b9b70e, type: 2}
-  isHost: 0
+  networkPrefab: {fileID: 100000, guid: 43aa2807209bd3743854004960b8cfde, type: 2}
