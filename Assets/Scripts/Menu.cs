@@ -42,6 +42,8 @@ public class Menu : MonoBehaviour {
 			networkManager = GameObject.FindGameObjectWithTag ("NetworkManager");
 			networkManagerScript = networkManager.GetComponent<NetworkManager>();
 		}
+
+		networkManagerScript.FindMenu();
 	}
 
 

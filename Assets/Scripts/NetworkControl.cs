@@ -25,6 +25,10 @@ using Leap;
 public class NetworkControl : MonoBehaviour {
 
 	Controller m_leapController;
+
+	// Network variables
+	private GameObject networkManager;
+	private NetworkManager networkManagerScript;
 	
 	public GameObject myCamera;
 
@@ -57,6 +61,11 @@ public class NetworkControl : MonoBehaviour {
 		if(networkView.isMine){
 			m_leapController = new Controller();
 		}
+
+		// Find the NetworkManager object
+		networkManager = GameObject.FindGameObjectWithTag ("NetworkManager");
+		networkManagerScript = networkManager.GetComponent<NetworkManager>();
+
 	}
 
 	void OnGUI()
@@ -75,6 +84,7 @@ public class NetworkControl : MonoBehaviour {
 		if (networkView.isMine)
 		{
 			InputMovement();
+			InputMenu();
 		}
 		// When it's not, we need to use the interpolation between the synchronized values
 		// to update the Dragon mouvement according to the movements of the Dragon of the player's opponent
@@ -118,6 +128,12 @@ public class NetworkControl : MonoBehaviour {
 			}
 		}
 		return h;
+	}
+
+	void InputMenu(){
+		if(Input.GetKey(KeyCode.Escape)){
+			networkManagerScript.QuitGame();
+		}
 	}
 
 	/*Handle player's input*/
@@ -194,7 +210,6 @@ public class NetworkControl : MonoBehaviour {
 				if (Input.GetKey(KeyCode.E))
 					newRot.z -= 10f;
 			}
-
 			// If the upArrow or DownArrow aren't pressed (= we haven't the hands over the LeapMotion controller) then stop the plane
 			else {
 				forceMult = 0f;

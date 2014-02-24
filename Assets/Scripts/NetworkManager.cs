@@ -11,7 +11,7 @@ public class NetworkManager : MonoBehaviour
 	private Menu mainMenuScript;
 
 	// Network variables
-	private const string typeName = "UniqueGameName";
+	private const string typeName = "VRDragon";
 	private const string gameName = "RoomName";
 
     private bool isRefreshingHostList = false;
@@ -22,12 +22,11 @@ public class NetworkManager : MonoBehaviour
 	 * Initialisation functions
 	 ******************************************************/
 
-	void Awake(){
+	public void FindMenu(){
 		// Retrieve the MainMenu gameObject
 		mainMenu = GameObject.Find ("MainMenu");
 		mainMenuScript = mainMenu.GetComponent<Menu>();
 	}
-
 
 	/*******************************************************
 	 * Server actions : Start or Close a server
@@ -37,7 +36,8 @@ public class NetworkManager : MonoBehaviour
     {
 		// Initialize the server on the network : 
 		// InitializeServer(MaxPlayerAmount, PortNumber, Use NAT punchthrough if no public IP present)
-        Network.InitializeServer(2, 25000, !Network.HavePublicAddress());
+		NetworkConnectionError error  = Network.InitializeServer(2, 25000, !Network.HavePublicAddress());
+		Debug.Log (error);
 		// Register the host to the Master : ServerRegisterHost(UniqueGameName, RoomName)
         MasterServer.RegisterHost(typeName, gameName);
     }
@@ -47,14 +47,42 @@ public class NetworkManager : MonoBehaviour
 		MasterServer.UnregisterHost();
 	}
 
+	public void CloseServerInGame(){
+		// Kick the player off the server before closing it (see OnPlayerDisconnected() function)
+		if (Network.connections.Length > 0) {
+			Debug.Log("Disconnecting: "+
+			          Network.connections[0].ipAddress+":"+Network.connections[0].port);
+			Network.CloseConnection(Network.connections[0], true);
+		} 
+	}
+
 
 	/*******************************************************
-	 * Client actions : Join a server
+	 * Server and Client actions : quit the game and go back to the menu
+	 ******************************************************/
+	
+	public void QuitGame(){
+		// Properly close or quit the server
+		if (Network.isServer){
+			CloseServerInGame();
+		}
+		else{
+			QuitServer();
+		}
+	}
+
+	/*******************************************************
+	 * Client actions : Join or Quit a server
 	 ******************************************************/
 
 	public void JoinServer(HostData hostData)
 	{
 		Network.Connect(hostData);
+	}
+
+	public void QuitServer()
+	{
+		Network.Disconnect();
 	}
 
 
@@ -95,6 +123,7 @@ public class NetworkManager : MonoBehaviour
 	// Actions called on the server whenever it has been succesfully initialized
 	void OnServerInitialized()
 	{
+		Debug.Log ("TO the Waiting room");
 		// Display the waiting room for the server-player
 		mainMenuScript.setCurrentStateWait();
 	}
@@ -114,6 +143,25 @@ public class NetworkManager : MonoBehaviour
 	{
 		// Launch the game
 		mainMenuScript.Play ();
+	}
+
+	// Actions called on the server whenever a player is disconnected from the server
+	void OnPlayerDisconnected(){
+		CloseServer ();
+		// Don't destroy the game object on which the script is attached
+		DontDestroyOnLoad (gameObject);
+		//Load the menu
+		Application.LoadLevel ("TestMenu");
+	}
+
+	// Actions called on client during disconnection from server, but also on the server when the connection has disconnected
+	void OnDisconnectedFromServer(){
+		if(Network.isClient){
+			// Don't destroy the game object on which the script is attached
+			DontDestroyOnLoad (gameObject);
+			// Load the menu
+			Application.LoadLevel ("TestMenu");
+		}
 	}
 
 }
