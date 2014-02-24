@@ -16,6 +16,8 @@ public class Menu : MonoBehaviour {
 	private int height = Screen.height;
 	private Texture2D blackTexture;
 	private GUIStyle styleMenu = new GUIStyle();
+	private bool displayMessage = false;
+	private string message;
 
 	// Loading next scene variable
 	private AsyncOperation async;
@@ -91,6 +93,11 @@ public class Menu : MonoBehaviour {
 			displayWaitingRoom();
 		else if(currentMenu == MenuState.Play)
 			displayBlackScreen(); 
+
+		if (displayMessage) {
+			GUI.Label (new Rect (0, 0,500,100), message);
+
+		}
 	}
 
 
@@ -153,12 +160,12 @@ public class Menu : MonoBehaviour {
 
 		// Button to close the server and go back to the main menu
 		if (GUI.Button(new Rect(100, 400, 250, 100), "Close Server")){
-			currentMenu = MenuState.MainMenu;
+			currentMenu = MenuState.NetworkManager;
 			networkManagerScript.CloseServer();
 		}
 	}
 
-	
+
 	public void displayBlackScreen(){
 		GUI.Box(new Rect (0 , 0, width, height),blackTexture,styleMenu);
 	}
@@ -175,7 +182,18 @@ public class Menu : MonoBehaviour {
 	public void setCurrentStateWait(){
 		currentMenu = MenuState.WaitingRoom;
 	}
+	public void setCurrentStateNetwork(){
+		currentMenu = MenuState.NetworkManager;
+	}
 
+	public void stopDisplayMessage(){
+		displayMessage = false;
+	}
+	public void setMessage(string msg){
+		message = msg;
+		displayMessage = true;
+		Invoke("stopDisplayMessage", 2);
+	}
 
 	/*******************************************************
 	 * Loading next scene functions

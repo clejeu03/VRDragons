@@ -9,6 +9,8 @@ public class NetworkManager : MonoBehaviour
 	// Main menu variables
 	private GameObject mainMenu;
 	private Menu mainMenuScript;
+	private bool hasMessageToMenu = false;
+	private string messageToMenu;
 
 	// Network variables
 	private const string typeName = "VRDragon";
@@ -26,6 +28,13 @@ public class NetworkManager : MonoBehaviour
 		// Retrieve the MainMenu gameObject
 		mainMenu = GameObject.Find ("MainMenu");
 		mainMenuScript = mainMenu.GetComponent<Menu>();
+
+		// The game was played and the server or the client has quitted
+		if (hasMessageToMenu) {
+			mainMenuScript.setCurrentStateNetwork();
+			mainMenuScript.setMessage (messageToMenu);
+			hasMessageToMenu = false;
+		}
 	}
 
 	/*******************************************************
@@ -37,7 +46,9 @@ public class NetworkManager : MonoBehaviour
 		// Initialize the server on the network : 
 		// InitializeServer(MaxPlayerAmount, PortNumber, Use NAT punchthrough if no public IP present)
 		NetworkConnectionError error  = Network.InitializeServer(2, 25000, !Network.HavePublicAddress());
-		Debug.Log (error);
+		if (error != NetworkConnectionError.NoError)
+			//Debug.Log (error);
+						mainMenuScript.setMessage ("A server has already been started. Try to join it !");
 		// Register the host to the Master : ServerRegisterHost(UniqueGameName, RoomName)
         MasterServer.RegisterHost(typeName, gameName);
     }
@@ -64,9 +75,13 @@ public class NetworkManager : MonoBehaviour
 	public void QuitGame(){
 		// Properly close or quit the server
 		if (Network.isServer){
+			messageToMenu = "Successfully closed server";
+			hasMessageToMenu = true;
 			CloseServerInGame();
 		}
 		else{
+			messageToMenu = "Successfully disconnected from server";
+			hasMessageToMenu = true;
 			QuitServer();
 		}
 	}
@@ -123,7 +138,6 @@ public class NetworkManager : MonoBehaviour
 	// Actions called on the server whenever it has been succesfully initialized
 	void OnServerInitialized()
 	{
-		Debug.Log ("TO the Waiting room");
 		// Display the waiting room for the server-player
 		mainMenuScript.setCurrentStateWait();
 	}
@@ -147,6 +161,10 @@ public class NetworkManager : MonoBehaviour
 
 	// Actions called on the server whenever a player is disconnected from the server
 	void OnPlayerDisconnected(){
+		if(!hasMessageToMenu){
+			messageToMenu = "The client has quit";
+			hasMessageToMenu = true;
+		}
 		CloseServer ();
 		// Don't destroy the game object on which the script is attached
 		DontDestroyOnLoad (gameObject);
@@ -157,6 +175,10 @@ public class NetworkManager : MonoBehaviour
 	// Actions called on client during disconnection from server, but also on the server when the connection has disconnected
 	void OnDisconnectedFromServer(){
 		if(Network.isClient){
+			if(!hasMessageToMenu){
+			   messageToMenu = "The server has been closed";
+			   hasMessageToMenu = true;
+			}
 			// Don't destroy the game object on which the script is attached
 			DontDestroyOnLoad (gameObject);
 			// Load the menu
