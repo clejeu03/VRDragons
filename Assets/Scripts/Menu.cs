@@ -5,22 +5,15 @@ public class Menu : MonoBehaviour {
 
 	// Network variables
 	public GameObject networkPrefab;
+	public GameObject mainCamera;
 	private GameObject networkManager;
 	private NetworkManager networkManagerScript;
 
 	private HostData[] hostList = null;
 	private bool refreshHostList = false;
 
-	// GUI variables
-	private int width = Screen.width;
-	private int height = Screen.height;
-	private Texture2D blackTexture;
-	private GUIStyle styleMenu = new GUIStyle();
 	private bool displayMessage = false;
 	private string message;
-
-	// Loading next scene variable
-	private AsyncOperation async;
 		
 	// Menu states variables
 	enum MenuState { MainMenu, NetworkManager, WaitingRoom, Play };
@@ -50,28 +43,14 @@ public class Menu : MonoBehaviour {
 
 
 	void Start () {
-		// Create a "black screen" texture
-		blackTexture = new Texture2D(width,height);
-		Color blackColor = new Color(0, 0, 0);
-
-		for(int i = 0; i<width; i++)
-		{
-			for(int j = 0; j<height; j++)
-				blackTexture.SetPixel(i, j, blackColor);
-		}
-		blackTexture.Apply();		
-
-		// Reset the background padding
-		styleMenu.padding = new RectOffset(0,0,0,0);
-
-
 		//Initiate the PlayerPref "mode"
 		if (!PlayerPrefs.HasKey("mode")){
 			PlayerPrefs.SetString("mode","solo");
 		}
+	}
 
-		//Load the next level asynchronically
-		Load();
+	void Update(){
+		mainCamera.transform.Rotate (new Vector3 (0, 1, 0), 0.05f);
 	}
 
 
@@ -81,9 +60,6 @@ public class Menu : MonoBehaviour {
 	
 	void OnGUI()
 	{
-		// Background
-		GUI.Box(new Rect (0 , 0, width, height),blackTexture,styleMenu);
-
 		// Menus
 		if (currentMenu == MenuState.MainMenu)
 			displayMainMenu();
@@ -91,8 +67,6 @@ public class Menu : MonoBehaviour {
 			displayNetworkMenu();
 		else if (currentMenu == MenuState.WaitingRoom)
 			displayWaitingRoom();
-		else if(currentMenu == MenuState.Play)
-			displayBlackScreen(); 
 
 		if (displayMessage) {
 			GUI.Label (new Rect (0, 0,500,100), message);
@@ -165,12 +139,6 @@ public class Menu : MonoBehaviour {
 		}
 	}
 
-
-	public void displayBlackScreen(){
-		GUI.Box(new Rect (0 , 0, width, height),blackTexture,styleMenu);
-	}
-
-
 	/*******************************************************
 	 * Setter functions
 	 ******************************************************/
@@ -198,20 +166,6 @@ public class Menu : MonoBehaviour {
 	/*******************************************************
 	 * Loading next scene functions
 	 ******************************************************/
-
-	//Load the next scene asynchronically
-	void Load() {
-		Debug.LogWarning("ASYNCLOAD STARTED  - Do not exit play mode (Unity could crashed)");
-		async = Application.LoadLevelAsync("TestGame");
-		async.allowSceneActivation = false;
-	}
-
-	//Activate the next scene
-	void ActivateScene() {
-		Debug.Log("Activate !");
-		async.allowSceneActivation = true;
-	}
-	
 	public void Play(){
 		currentMenu = MenuState.Play;
 
@@ -219,6 +173,6 @@ public class Menu : MonoBehaviour {
 			// The networkManager won't be destroy
 			DontDestroyOnLoad (networkManager);
 		}
-		ActivateScene ();
+		Application.LoadLevel("TestGame");
 	}
 }
