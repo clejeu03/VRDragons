@@ -57,6 +57,9 @@ public class Menu : MonoBehaviour {
 		if (!PlayerPrefs.HasKey("mode")){
 			PlayerPrefs.SetString("mode","solo");
 		}
+
+		// Enable mouse curser
+		Screen.showCursor = true;
 	}
 
 	void Update(){
