@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using Leap;
 
 public class LeapFly : MonoBehaviour {
@@ -8,10 +9,37 @@ public class LeapFly : MonoBehaviour {
 
 	private float forceMult = 0.0f;
 	private Vector3 newRot = Vector3.zero;
+	private Vector3 lastPos = Vector3.zero;
+	private AudioSource m_audio;
+	private Dictionary<string,AudioClip> m_actionSounds;
   
 	void Start () {
 		// Get the leapController
 		m_leapController = new Controller();
+	
+		//Store the last position of the plane
+		lastPos = transform.position;
+
+		//Manage sounds
+		m_audio = gameObject.GetComponent<AudioSource>();
+
+		m_actionSounds = new Dictionary<string, AudioClip>();
+		m_actionSounds["Acceleration"] = Resources.Load("Audio/acceleration") as AudioClip;
+		m_actionSounds["TurnLeft"] = Resources.Load("Audio/turn_left") as AudioClip;
+		m_actionSounds["TurnRight"] = Resources.Load("Audio/turn_right") as AudioClip;
+	}
+
+	void Update() {
+		//Retrieve the sound according to the movement
+		Vector3 velocity = transform.position - lastPos;
+		lastPos = transform.position;
+		if (velocity.y > 0.1){
+			m_audio.clip = m_actionSounds["Acceleration"];
+			m_audio.Play();
+		}
+		if (velocity.y < -0.1){
+			m_audio.Stop();
+		}
 	}
   
 	/* Get the left Hand*/
