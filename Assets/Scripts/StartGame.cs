@@ -9,6 +9,9 @@ public class StartGame : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+
+		// Disable mouse cursor
+		Screen.showCursor = false;
 	
 		if (PlayerPrefs.GetString ("mode") == "solo") {
 			Debug.Log ("Mode Solo");
