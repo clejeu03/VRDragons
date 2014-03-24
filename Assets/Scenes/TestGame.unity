@@ -1314,6 +1314,7 @@ GameObject:
   - 4: {fileID: 225774024}
   - 33: {fileID: 225774026}
   - 23: {fileID: 225774025}
+  - 64: {fileID: 225774027}
   m_Layer: 0
   m_Name: Herbe
   m_TagString: Untagged
@@ -1361,6 +1362,19 @@ MeshFilter:
     type: 2}
   m_PrefabInternal: {fileID: 121966694}
   m_GameObject: {fileID: 225774023}
+  m_Mesh: {fileID: 4300124, guid: fc19476a526acd64a96cf5661e499a7e, type: 3}
+--- !u!64 &225774027
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 225774023}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_SmoothSphereCollisions: 0
+  m_Convex: 0
   m_Mesh: {fileID: 4300124, guid: fc19476a526acd64a96cf5661e499a7e, type: 3}
 --- !u!1 &230062403
 GameObject:
@@ -9910,7 +9924,7 @@ Light:
   m_SpotAngle: 30
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 1
+    m_Type: 2
     m_Resolution: -1
     m_Strength: 1
     m_Bias: .389999986
@@ -11389,6 +11403,7 @@ GameObject:
   - 4: {fileID: 1663475815}
   - 33: {fileID: 1663475817}
   - 23: {fileID: 1663475816}
+  - 64: {fileID: 1663475818}
   m_Layer: 0
   m_Name: nuage3
   m_TagString: Untagged
@@ -11436,6 +11451,19 @@ MeshFilter:
     type: 2}
   m_PrefabInternal: {fileID: 121966694}
   m_GameObject: {fileID: 1663475814}
+  m_Mesh: {fileID: 4300146, guid: fc19476a526acd64a96cf5661e499a7e, type: 3}
+--- !u!64 &1663475818
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1663475814}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_SmoothSphereCollisions: 0
+  m_Convex: 0
   m_Mesh: {fileID: 4300146, guid: fc19476a526acd64a96cf5661e499a7e, type: 3}
 --- !u!1 &1666158496
 GameObject:
