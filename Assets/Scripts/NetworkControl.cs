@@ -94,6 +94,21 @@ public class NetworkControl : MonoBehaviour {
 		}
 	}
 
+	/* Send the new position, rotation and velocity compute by the collision engine*/
+	void OnCollisionEnter(Collision collision){
+		if (networkView.isMine) {
+			networkView.RPC("updatePosition", RPCMode.OthersBuffered, transform.localPosition, transform.localRotation,transform.rigidbody.velocity);
+		}
+	}
+
+	/* Update the position, rotation and velocity of the other user's dragon after a collision*/
+	[RPC] void updatePosition(Vector3 position, Quaternion rotation, Vector3 velocity)
+	{
+		transform.localPosition = position;
+		transform.localRotation = rotation;
+		transform.rigidbody.velocity = velocity;
+	}
+
 	/* Update the rotation and velocity of the Dragon according to the movements of the Dragon of the player's opponent*/
 	private void SyncedMovement()
 	{
