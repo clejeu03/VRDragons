@@ -29,8 +29,11 @@ public class LeapFly : MonoBehaviour {
 		m_actionSounds["TurnRight"] = Resources.Load("Audio/turn_right") as AudioClip;
 	}
 
-	void Update() {
+	void FixedUpdate() {
 		//Retrieve the sound according to the movement
+
+		gameObject.transform.forward
+
 		Vector3 velocity = transform.position - lastPos;
 		lastPos = transform.position;
 		if (velocity.y > 0.1){
