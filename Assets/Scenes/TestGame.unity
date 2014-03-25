@@ -3486,9 +3486,15 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 8200002, guid: 605f32b559d494e4794497ed652dd610, type: 2}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 8200002, guid: 605f32b559d494e4794497ed652dd610, type: 2}
+      propertyPath: m_PlayOnAwake
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 8200002, guid: 605f32b559d494e4794497ed652dd610, type: 2}
+    - {fileID: 8200000, guid: 605f32b559d494e4794497ed652dd610, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: 605f32b559d494e4794497ed652dd610, type: 2}
   m_RootGameObject: {fileID: 1882829575}
   m_IsPrefabParent: 0
@@ -9340,49 +9346,38 @@ MeshFilter:
 --- !u!82 &1428444042
 AudioSource:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 8200002, guid: 605f32b559d494e4794497ed652dd610,
-    type: 2}
-  m_PrefabInternal: {fileID: 543486557}
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1428444038}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
   m_audioClip: {fileID: 8300000, guid: b655dbf1206d1e54b847f382ddb40295, type: 3}
-  m_PlayOnAwake: 0
+  m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
   Loop: 1
   Mute: 0
-  Priority: 125
+  Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 200
+  MaxDistance: 500
   Pan2D: 0
-  rolloffMode: 1
+  rolloffMode: 0
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
   rolloffCustomCurve:
     serializedVersion: 2
     m_Curve:
-    - time: .200000003
+    - time: 0
       value: 1
-      inSlope: -5.00199175
-      outSlope: -5.00199175
-      tangentMode: 0
-    - time: .562436581
-      value: .520408154
-      inSlope: -1.25049794
-      outSlope: -1.25049794
-      tangentMode: 0
-    - time: .800000012
-      value: .25
-      inSlope: -.312624484
-      outSlope: -.312624484
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
     - time: 1
-      value: .200000003
-      inSlope: -.200079843
-      outSlope: -.200079843
+      value: 0
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -9468,19 +9463,18 @@ MeshFilter:
 --- !u!82 &1444723411
 AudioSource:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 8200000, guid: 605f32b559d494e4794497ed652dd610,
-    type: 2}
-  m_PrefabInternal: {fileID: 543486557}
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1444723407}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
   m_audioClip: {fileID: 8300000, guid: 9430937a07c233544a2da6729fc951b8, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
-  Priority: 255
+  Priority: 128
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500
