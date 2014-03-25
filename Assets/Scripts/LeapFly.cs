@@ -97,7 +97,7 @@ public class LeapFly : MonoBehaviour {
 
 			// Adding the rot.z as a way to use banking (rolling) to turn.
 			newRot.y += handDiff.z * 3.0f - newRot.z * 0.03f * transform.rigidbody.velocity.magnitude;
-			newRot.x = -(avgPalmForward.y - 0.1f) * 100.0f;
+			newRot.x = -(avgPalmForward.y - 0.1f) * 200.0f;
 
 			float forceMult = 10.0f;
       

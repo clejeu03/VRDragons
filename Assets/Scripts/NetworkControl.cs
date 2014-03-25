@@ -71,11 +71,11 @@ public class NetworkControl : MonoBehaviour {
 	void OnGUI()
 	{
 		// If the game is the host
-		if(Network.isServer){
+		/*if(Network.isServer){
 			GUI.Box(new Rect(10,10,50,20), "Host");
 		}
 		else
-			GUI.Box(new Rect(10,10,50,20), "Client");
+			GUI.Box(new Rect(10,10,50,20), "Client");*/
 	}
 
 	void Update()
