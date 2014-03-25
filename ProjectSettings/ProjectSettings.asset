@@ -11,7 +11,7 @@ PlayerSettings:
   targetResolution: 0
   accelerometerFrequency: 60
   companyName: DefaultCompany
-  productName: VRDragons
+  productName: Paper in the Sky
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   defaultScreenWidth: 1024
@@ -112,8 +112,24 @@ PlayerSettings:
   m_BuildTargetIcons:
   - m_BuildTarget: 
     m_Icons:
-    - m_Icon: {fileID: 0}
+    - m_Icon: {fileID: 2800000, guid: 20ba462ffbfb9d249a2e04824a3c7c7f, type: 3}
       m_Size: 128
+  - m_BuildTarget: Standalone
+    m_Icons:
+    - m_Icon: {fileID: 0}
+      m_Size: 1024
+    - m_Icon: {fileID: 2800000, guid: 20ba462ffbfb9d249a2e04824a3c7c7f, type: 3}
+      m_Size: 512
+    - m_Icon: {fileID: 0}
+      m_Size: 256
+    - m_Icon: {fileID: 2800000, guid: 3ca908290e44cf547ab9d8a3721994c2, type: 3}
+      m_Size: 128
+    - m_Icon: {fileID: 0}
+      m_Size: 48
+    - m_Icon: {fileID: 2800000, guid: 88ba4f4b546bcc144a8e28f1e414e8b8, type: 3}
+      m_Size: 32
+    - m_Icon: {fileID: 0}
+      m_Size: 16
   m_BuildTargetBatching: []
   webPlayerTemplate: APPLICATION:Default
   m_TemplateCustomTags: {}
