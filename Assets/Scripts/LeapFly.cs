@@ -9,16 +9,17 @@ public class LeapFly : MonoBehaviour {
 
 	private float forceMult = 0.0f;
 	private Vector3 newRot = Vector3.zero;
-	private Vector3 lastPos = Vector3.zero;
 	private AudioSource m_audio;
 	private Dictionary<string,AudioClip> m_actionSounds;
+	private bool m_isGoingLeft;
+	private bool m_isGoingRight;
   
 	void Start () {
 		// Get the leapController
 		m_leapController = new Controller();
-	
-		//Store the last position of the plane
-		lastPos = transform.position;
+
+		m_isGoingLeft = false;
+		m_isGoingRight = false;
 
 		//Manage sounds
 		m_audio = gameObject.GetComponent<AudioSource>();
@@ -27,22 +28,6 @@ public class LeapFly : MonoBehaviour {
 		m_actionSounds["Acceleration"] = Resources.Load("Audio/acceleration") as AudioClip;
 		m_actionSounds["TurnLeft"] = Resources.Load("Audio/turn_left") as AudioClip;
 		m_actionSounds["TurnRight"] = Resources.Load("Audio/turn_right") as AudioClip;
-	}
-
-	void FixedUpdate() {
-		//Retrieve the sound according to the movement
-
-		gameObject.transform.forward
-
-		Vector3 velocity = transform.position - lastPos;
-		lastPos = transform.position;
-		if (velocity.y > 0.1){
-			m_audio.clip = m_actionSounds["Acceleration"];
-			m_audio.Play();
-		}
-		if (velocity.y < -0.1){
-			m_audio.Stop();
-		}
 	}
   
 	/* Get the left Hand*/
@@ -96,6 +81,16 @@ public class LeapFly : MonoBehaviour {
 			newRot.z = -handDiff.y * 20.0f;
 
 			// Adding the rot.z as a way to use banking (rolling) to turn.
+			if(handDiff.z * 3.0f - newRot.z * 0.03f * transform.rigidbody.velocity.magnitude > 0.1){
+				m_isGoingRight = true;
+				m_isGoingLeft = false;
+			}else if(handDiff.z * 3.0f - newRot.z * 0.03f * transform.rigidbody.velocity.magnitude < 0.1){
+				m_isGoingRight = false;
+				m_isGoingLeft = true;
+			}else{
+				m_isGoingRight = false;
+				m_isGoingLeft = false;
+			}
 			newRot.y += handDiff.z * 3.0f - newRot.z * 0.03f * transform.rigidbody.velocity.magnitude;
 			newRot.x = -(avgPalmForward.y - 0.1f) * 200.0f;
 
@@ -108,6 +103,8 @@ public class LeapFly : MonoBehaviour {
       
 			transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(newRot), 0.1f);
 			transform.rigidbody.velocity = transform.forward * forceMult;
+
+			computeSounds();
 		}
 
 		// Keyboard controls
@@ -133,10 +130,17 @@ public class LeapFly : MonoBehaviour {
 					newRot.x += 10f;
 
 				// Rotation around the y axis
-				if (Input.GetKey(KeyCode.Q))
+				if (Input.GetKey(KeyCode.Q)){
 					newRot.y -= 10f;
-				if (Input.GetKey(KeyCode.D))
+					m_isGoingLeft = true;
+					m_isGoingRight = false;
+				}
+				if (Input.GetKey(KeyCode.D)){
 					newRot.y += 10f;
+					m_isGoingRight = true;
+					m_isGoingLeft = false;
+				}
+
 
 				// Rotation around the z axis
 				if (Input.GetKey(KeyCode.A))
@@ -149,9 +153,80 @@ public class LeapFly : MonoBehaviour {
 			else {
 				forceMult = 0f;
 			}
+
+			//Get rotation states
+//			if(Input.GetKeyDown(KeyCode.D) && Input.GetKeyDown(KeyCode.UpArrow)){
+//				m_isGoingRight = true;
+//				m_isGoingLeft = false;
+//			}else if(Input.GetKeyDown(KeyCode.Q) && Input.GetKeyDown(KeyCode.UpArrow) ){
+//				m_isGoingLeft = true;
+//				m_isGoingRight = false;
+//			}else if( (!Input.GetKeyDown(KeyCode.Q) && !Input.GetKeyDown(KeyCode.D)) ) {
+//				m_isGoingRight = false;
+//				m_isGoingLeft = false;
+//			}
 		
 			transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(newRot), 0.1f);
 			transform.rigidbody.velocity = transform.forward * forceMult;
+
+			computeSounds();
+		}
+	
+	}
+
+	void computeSounds(){
+		//Retrieve the sound according to the movement
+		Vector3 rotation = transform.localRotation.eulerAngles;
+		rotation.x = transform.rigidbody.velocity.magnitude * 7.0f;
+
+		if(Vector3.Dot(transform.rigidbody.velocity, transform.forward) > 0) {
+			if( !(m_audio.clip == m_actionSounds["Acceleration"] && m_audio.isPlaying) ){
+				StartCoroutine(fadeOut());
+				m_audio.Stop();
+				m_audio.clip = m_actionSounds["Acceleration"];
+				m_audio.volume = 0.0f;
+				m_audio.Play();
+				StartCoroutine(fadeIn());
+			}
+//			if(m_isGoingRight) {
+//				Debug.Log ("right !");
+//				if(!(m_audio.clip == m_actionSounds["TurnRight"] && m_audio.isPlaying) ){
+//					StartCoroutine(fadeOut());
+//					m_audio.Stop();
+//					m_audio.clip = m_actionSounds["TurnRight"];
+//					m_audio.volume = 0.0f;
+//					m_audio.Play();
+//					m_audio.loop = true;
+//					StartCoroutine(fadeIn());
+//				}
+//			}else if(m_isGoingLeft) {
+//				Debug.Log ("left !");
+//				if( !(m_audio.clip == m_actionSounds["TurnLeft"] && m_audio.isPlaying) ){
+//					StartCoroutine(fadeOut());
+//					m_audio.Stop();
+//					m_audio.clip = m_actionSounds["TurnLeft"];
+//					m_audio.volume = 0.0f;
+//					m_audio.Play();
+//					m_audio.loop = true;
+//					StartCoroutine(fadeIn());
+//				}
+//			}
+		}else{
+			m_audio.Stop();
+		}
+	}
+
+	IEnumerator fadeIn() {
+		for(int i = 0; i < 10; ++i){
+			yield return new WaitForSeconds (0.2f);
+			m_audio.volume = i*0.1f;
+		}
+	}
+	
+	IEnumerator fadeOut() {
+		for(int i = 10 ; i > 0; --i){
+			yield return new WaitForSeconds (0.2f);
+			m_audio.volume = i* 0.1f;
 		}
 	}
   
